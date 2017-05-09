@@ -21,17 +21,17 @@ public class CarDao implements Dao<CarEntity> {
 
     @Override
     public CarEntity add(CarEntity carEntity) {
-        return entityManagerHelper.transaction(carEntity, EntityManagerHelper.OperationType.ADD);
+        return entityManagerHelper.transactionAddOrUpdate(carEntity, EntityManagerHelper.OperationType.ADD);
     }
 
     @Override
-    public void delete(CarEntity carEntity) {
-        entityManagerHelper.transaction(carEntity, EntityManagerHelper.OperationType.DELETE);
+    public boolean delete(CarEntity carEntity) {
+        return entityManagerHelper.transactionDelete(carEntity);
     }
 
     @Override
     public CarEntity update(CarEntity carEntity) {
-        return entityManagerHelper.transaction(carEntity, EntityManagerHelper.OperationType.UPDATE);
+        return entityManagerHelper.transactionAddOrUpdate(carEntity, EntityManagerHelper.OperationType.UPDATE);
     }
 
     @Override

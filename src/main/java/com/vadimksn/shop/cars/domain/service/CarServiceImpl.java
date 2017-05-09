@@ -1,7 +1,6 @@
 package com.vadimksn.shop.cars.domain.service;
 
 
-
 import com.vadimksn.shop.cars.data.dao.Dao;
 import com.vadimksn.shop.cars.data.entity.CarEntity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +23,8 @@ public class CarServiceImpl implements CarService<CarEntity> {
     }
 
     @Override
-    public void deleteCar(CarEntity carEntity) {
-        dao.delete(carEntity);
+    public boolean deleteCar(CarEntity carEntity) {
+        return dao.delete(carEntity);
     }
 
     @Override

@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -32,50 +33,62 @@ public class CarController {
     public ResponseEntity<List<CarDto>> getAllCars() {
         List<CarDto> carDtos = carMapper.convertToDto(carService.getAllCars());
         if (carDtos.isEmpty()) {
-            logger.info("CarController.getAllCars(), HttpStatus.NO_CONTENT");
+            logger.error("Database is empty.");
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
+        logger.info("All entities were loaded from database : " + Arrays.toString(carDtos.toArray()));
         return new ResponseEntity<>(carDtos, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @RequestMapping(value = "/id{id}", method = RequestMethod.GET)
     public ResponseEntity<CarDto> getCarById(@PathVariable("id") int id) {
-        CarDto carDto = carMapper.convertToDto(carService.findById(id));
-        if (carDto == null) {
-            logger.info("CarController.getCarById(), HttpStatus.NO_CONTENT");
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        CarEntity carEntity = carService.findById(id);
+        if (carEntity == null) {
+            logger.error("Entity by id:[" + id + "] was not found in database.");
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
+        CarDto carDto = carMapper.convertToDto(carEntity);
+        logger.info("Entity [" + carDto + " ] by id:[" + id + "] was loaded from database.");
         return new ResponseEntity<>(carDto, HttpStatus.OK);
     }
 
+
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<CarDto> addCar(@RequestBody CarDto carDto) {
-        CarDto addedCarDto = carMapper.convertToDto(carService.addCar(carMapper.convertToEntity(carDto)));
-        if (addedCarDto != null) {
+        CarEntity carEntity = carMapper.convertToEntity(carDto);
+        if (carEntity.validateToPost()) {
+            CarDto addedCarDto = carMapper.convertToDto(carService.addCar(carEntity));
+            logger.info("Entity [" + addedCarDto + "] was added in database.");
             return new ResponseEntity<>(addedCarDto, HttpStatus.OK);
-        } else logger.info("CarController.addCar(), HttpStatus.NO_CONTENT");
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        logger.error("Entity: [" + carEntity + "] is not valid.");
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
     @RequestMapping(method = RequestMethod.PUT)
     public ResponseEntity<CarDto> updateCar(@RequestBody CarDto carDto) {
+        CarEntity carEntity = carMapper.convertToEntity(carDto);
+        if (carEntity.getId() == 0||!carEntity.validateToPut()) {
+            logger.error("Dto: [" + carEntity + "] is not valid.");
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
         CarDto updatedCarDto = carMapper.convertToDto(carService.updateCar(carMapper.convertToEntity(carDto)));
-        if (updatedCarDto.getId() == carDto.getId()) {
-            return new ResponseEntity<>(updatedCarDto, HttpStatus.OK);
-        } else logger.info("CarController.updateCar(), HttpStatus.BAD_REQUEST");
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        logger.info("Entity: [" + updatedCarDto + "] was updated.");
+        return new ResponseEntity<>(updatedCarDto, HttpStatus.OK);
     }
 
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/id{id}", method = RequestMethod.DELETE)
     public ResponseEntity deleteCarById(@PathVariable("id") int id) {
         CarEntity carEntity = carService.findById(id);
-        carService.deleteCar(carEntity);
-        if (carService.findById(id) == null) {
+        if (carEntity == null) {
+            logger.error("Entity to delete by id:[" + id + "] was not found in database.");
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        if (carService.deleteCar(carEntity)) {
+            logger.info("Entity:[" + carEntity + "] was deleted by id:[" + id + "] from database.");
             return new ResponseEntity(HttpStatus.OK);
-        } else logger.info("CarController.deleteCarById(), HttpStatus.BAD_REQUEST");
+        } else logger.error("Error while deleting entity:[" + carEntity + "] by id:[" + id + "].");
         return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
-
-
 }

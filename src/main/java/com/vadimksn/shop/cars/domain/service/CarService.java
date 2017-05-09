@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface CarService<Entity>{
     Entity addCar(Entity entity);
-    void deleteCar(Entity entity);
+    boolean deleteCar(Entity entity);
     Entity updateCar(Entity entity);
     Entity findById(Object id);
     List<Entity> getAllCars();

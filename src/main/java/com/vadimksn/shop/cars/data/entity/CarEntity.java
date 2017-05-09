@@ -53,7 +53,7 @@ public class CarEntity extends BaseEntity {
         this.color = color;
     }
 
-    @Column( name = "current_condition")
+    @Column(name = "current_condition")
     public String getCurrentCondition() {
         return currentCondition;
     }
@@ -98,5 +98,15 @@ public class CarEntity extends BaseEntity {
                 ", color='" + color + '\'' +
                 ", currentCondition='" + currentCondition + '\'' +
                 '}';
+    }
+
+    public boolean validateToPost() {
+        return !(getId() != 0 || year <= 0 || price <= 0 ||
+                mark == null || model == null || color == null || currentCondition == null);
+    }
+
+    public boolean validateToPut() {
+        return !(getId() < 1 || year <= 0 || price <= 0 ||
+                mark == null || model == null || color == null || currentCondition == null);
     }
 }

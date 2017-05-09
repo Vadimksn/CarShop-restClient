@@ -15,12 +15,11 @@ public class EntityManagerHelper<T> {
     }
 
     public enum OperationType {
-        ADD, DELETE, UPDATE
+        ADD, UPDATE
 
     }
 
-
-    public T transaction(T t, OperationType operationType) {
+    public T transactionAddOrUpdate(T t, OperationType operationType) {
         entityManager = getEntityManager();
 
         try {
@@ -32,10 +31,6 @@ public class EntityManagerHelper<T> {
                 case UPDATE:
                     entityManager.merge(t);
                     break;
-                case DELETE:
-                    T t1 = entityManager.merge(t);
-                    entityManager.remove(t1);
-                    break;
             }
             entityManager.getTransaction().commit();
         } catch (Exception e) {
@@ -44,8 +39,24 @@ public class EntityManagerHelper<T> {
         } finally {
             entityManager.close();
         }
-
         return t;
+    }
+
+    public boolean transactionDelete(T t) {
+        entityManager = getEntityManager();
+        try {
+            entityManager.getTransaction().begin();
+            T t1 = entityManager.merge(t);
+            entityManager.remove(t1);
+            entityManager.getTransaction().commit();
+        } catch (Exception e) {
+            entityManager.getTransaction().rollback();
+            e.printStackTrace();
+            return false;
+        }finally {
+            entityManager.close();
+        }
+        return true;
     }
 
 

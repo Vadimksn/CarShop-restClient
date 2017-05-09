@@ -88,4 +88,18 @@ public class CarDto {
     public void setCurrentCondition(String currentCondition) {
         this.currentCondition = currentCondition;
     }
+
+    @Override
+    public String toString() {
+        return "CarDto{" +
+                "id=" + id +
+                ", year=" + year +
+                ", price=" + price +
+                ", available=" + available +
+                ", mark='" + mark + '\'' +
+                ", model='" + model + '\'' +
+                ", color='" + color + '\'' +
+                ", currentCondition='" + currentCondition + '\'' +
+                '}';
+    }
 }
